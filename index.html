@@ -1,0 +1,239 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- 主要 A-Frame 與 AR.js 函式庫 -->
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
+
+      /* 模型切換區 */
+      #model-panel {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        padding: 8px 12px;
+        border-radius: 10px;
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        backdrop-filter: blur(6px);
+      }
+
+      .model-btn {
+        background: #fff2;
+        border: 2px solid #fff;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .model-btn.active {
+        background: #0f0;
+        color: black;
+        font-weight: bold;
+      }
+
+      .model-btn:hover {
+        transform: scale(1.05);
+      }
+
+      /* 材質選擇區 */
+      #ui-panel {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.4);
+        padding: 10px 15px;
+        border-radius: 12px;
+        z-index: 1000;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 95%;
+        backdrop-filter: blur(6px);
+      }
+
+      .texture-btn {
+        width: 50px;
+        height: 50px;
+        border: 2px solid white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        background-size: cover;
+        background-position: center;
+        opacity: 0.9;
+      }
+
+      .texture-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+        opacity: 1;
+      }
+
+      .texture-btn.active {
+        border-color: #00ff00;
+        box-shadow: 0 0 12px rgba(0, 255, 0, 0.8);
+      }
+
+      @media (max-width: 600px) {
+        #ui-panel {
+          bottom: 5px;
+          padding: 8px;
+          gap: 6px;
+        }
+        .texture-btn {
+          width: 40px;
+          height: 40px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 模型切換按鈕 -->
+    <div id="model-panel">
+      <button class="model-btn active" data-model="assets/assets.glb">CapA</button>
+      <button class="model-btn" data-model="assets/cap2.glb">CapB</button>
+    </div>
+
+    <!-- 材質切換按鈕 -->
+    <div id="ui-panel">
+      <button class="texture-btn active" data-texture="#texture-wood" style="background-image:url('assets/tex1.jpg')"></button>
+      <button class="texture-btn" data-texture="#texture-metal" style="background-image:url('assets/tex2.jpg')"></button>
+      <button class="texture-btn" data-texture="#texture-stone" style="background-image:url('assets/tex3.jpg')"></button>
+      <button class="texture-btn" data-texture="#texture-plastic" style="background-image:url('assets/tex4.jpg')"></button>
+      <button class="texture-btn" data-texture="#texture-gold" style="background-image:url('assets/tex5.jpg')"></button>
+      <button class="texture-btn" data-texture="#texture-leather" style="background-image:url('assets/tex6.jpg')"></button>
+    </div>
+
+    <!-- AR 場景 -->
+    <a-scene
+      vr-mode-ui="enabled: false;"
+      loading-screen="enabled: false;"
+      renderer="logarithmicDepthBuffer: true;"
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+      embedded
+      gesture-detector
+    >
+      <a-assets>
+        <img id="texture-wood" src="assets/tex1.jpg" crossorigin="anonymous">
+        <img id="texture-metal" src="assets/tex2.jpg" crossorigin="anonymous">
+        <img id="texture-stone" src="assets/tex3.jpg" crossorigin="anonymous">
+        <img id="texture-plastic" src="assets/tex4.jpg" crossorigin="anonymous">
+        <img id="texture-gold" src="assets/tex5.jpg" crossorigin="anonymous">
+        <img id="texture-leather" src="assets/tex6.jpg" crossorigin="anonymous">
+      </a-assets>
+
+      <a-marker
+        id="animated-marker"
+        type="pattern"
+        preset="custom"
+        url="assets/marker.patt"
+        raycaster="objects: .clickable"
+        emitevents="true"
+        cursor="fuse: false; rayOrigin: mouse;"
+      >
+        <a-entity
+          id="target-model"
+          scale="0.1 0.1 0.1"
+          class="clickable"
+          gesture-handler
+        ></a-entity>
+      </a-marker>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+      const modelButtons = document.querySelectorAll('.model-btn');
+      const textureButtons = document.querySelectorAll('.texture-btn');
+      const modelEntity = document.querySelector('#target-model');
+
+      let currentTexture = document.querySelector('.texture-btn.active').dataset.texture;
+
+      // --- 初始化載入第一個模型 ---
+      loadModel(modelButtons[0].dataset.model);
+
+      // --- 模型切換 ---
+      modelButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          modelButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          loadModel(btn.dataset.model);
+        });
+      });
+
+      // --- 材質切換 ---
+      textureButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          textureButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentTexture = btn.dataset.texture;
+          applyTextureToLabel(currentTexture);
+        });
+      });
+
+      // --- 載入模型 ---
+      function loadModel(src) {
+        modelEntity.setAttribute('gltf-model', src);
+        console.log('🔄 載入模型：', src);
+
+        // 模型載入完成後，套用當前貼圖
+        modelEntity.addEventListener('model-loaded', () => {
+          console.log('✅ 模型載入完成');
+          applyTextureToLabel(currentTexture);
+        }, { once: true });
+      }
+
+      // --- 套用貼圖到 Label ---
+      function applyTextureToLabel(textureID) {
+        const textureEl = document.querySelector(textureID);
+        const map = new THREE.TextureLoader().load(textureEl.getAttribute('src'));
+        map.encoding = THREE.sRGBEncoding;
+
+        const mesh = modelEntity.getObject3D('mesh');
+        if (!mesh) {
+          console.warn('⚠️ 模型尚未載入完成，稍後再試');
+          return;
+        }
+
+        let found = false;
+        mesh.traverse(node => {
+          if (node.isMesh && node.name.toLowerCase().includes('label')) {
+            found = true;
+            const mats = Array.isArray(node.material) ? node.material : [node.material];
+            mats.forEach(mat => {
+              mat.map = map;
+              mat.color.set('#ffffff');
+              mat.needsUpdate = true;
+            });
+          }
+        });
+
+        if (found) {
+          console.log('🎨 已套用貼圖到 Label:', textureID);
+        } else {
+          console.warn('⚠️ 模型中找不到 Label 物件');
+        }
+      }
+    </script>
+  </body>
+</html>
