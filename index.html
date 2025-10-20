@@ -9,107 +9,116 @@
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
 
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-      }
+  body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
 
-      /* 模型切換區 */
-      #model-panel {
-        position: fixed;
-        bottom: 90px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.5);
-        padding: 8px 12px;
-        border-radius: 10px;
-        z-index: 1000;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: center;
-        backdrop-filter: blur(6px);
-      }
+  /* 模型切換區（上方） */
+  #model-panel {
+    position: fixed;
+    bottom: 90px; /* 在材質按鈕上方 */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px 12px;
+    border-radius: 10px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+  }
 
-      .model-btn {
-        background: #fff2;
-        border: 2px solid #fff;
-        color: white;
-        padding: 6px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: 0.3s;
-      }
+  .model-btn {
+    background: #fff2;
+    border: 2px solid #fff;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
 
-      .model-btn.active {
-        background: #0f0;
-        color: black;
-        font-weight: bold;
-      }
+  .model-btn.active {
+    background: #0f0;
+    color: black;
+    font-weight: bold;
+  }
 
-      .model-btn:hover {
-        transform: scale(1.05);
-      }
+  .model-btn:hover {
+    transform: scale(1.05);
+  }
 
-      /* 材質選擇區 */
-      #ui-panel {
-        position: fixed;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.4);
-        padding: 10px 15px;
-        border-radius: 12px;
-        z-index: 1000;
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: center;
-        max-width: 95%;
-        backdrop-filter: blur(6px);
-      }
+  /* 材質選擇區（下方） */
+  #ui-panel {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px 15px;
+    border-radius: 12px;
+    z-index: 999; /* 比 model-panel 低一層 */
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 95%;
+    backdrop-filter: blur(6px);
+  }
 
-      .texture-btn {
-        width: 50px;
-        height: 50px;
-        border: 2px solid white;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s;
-        background-size: cover;
-        background-position: center;
-        opacity: 0.9;
-      }
+  .texture-btn {
+    width: 50px;
+    height: 50px;
+    border: 2px solid white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.9;
+  }
 
-      .texture-btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-        opacity: 1;
-      }
+  .texture-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    opacity: 1;
+  }
 
-      .texture-btn.active {
-        border-color: #00ff00;
-        box-shadow: 0 0 12px rgba(0, 255, 0, 0.8);
-      }
+  .texture-btn.active {
+    border-color: #00ff00;
+    box-shadow: 0 0 12px rgba(0, 255, 0, 0.8);
+  }
 
-      @media (max-width: 600px) {
-        #ui-panel {
-          bottom: 5px;
-          padding: 8px;
-          gap: 6px;
-        }
-        #model-panel {
-          bottom: 70px;
-          padding: 6px 10px;
-          gap: 6px;
-        }  
-        .texture-btn {
-          width: 40px;
-          height: 40px;
-        }
-      }
-    </style>
+  /* 📱 手機版調整 */
+  @media screen and (max-width: 600px) {
+    #ui-panel {
+      bottom: 5px;
+      padding: 8px;
+      gap: 6px;
+    }
+
+    #model-panel {
+      bottom: 75px; /* 確保在材質區上方 */
+      padding: 6px 10px;
+      gap: 6px;
+    }
+
+    .texture-btn {
+      width: 40px;
+      height: 40px;
+    }
+
+    .model-btn {
+      padding: 4px 8px;
+      font-size: 14px;
+    }
+  }
+</style>
+
   </head>
 
   <body>
@@ -243,6 +252,7 @@
     </script>
   </body>
 </html>
+
 
 
 
